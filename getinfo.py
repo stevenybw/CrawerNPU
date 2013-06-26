@@ -9,20 +9,25 @@ from http import cookiejar
 from html.parser import HTMLParser
 from urllib.parse import urlparse, urljoin
 
-procQue = []
+procQue = queue.Queue()
 task_num = 4
 visited = set()
-m_lock = threading.Lock()
-que_lock = threading.Lock()
 BASE_PATH = "I:\\WebCrawer\\"
 
 cj = cookiejar.CookieJar()
 opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cj))
 
-procQue.insert(0,"http://www.nwpu.edu.cn/")
+procQue.put("http://www.nwpu.edu.cn/")
 visited.add("http://www.nwpu.edu.cn/")
 
+lock = threading.Lock()
+
 guess_list = ["utf-8","gbk"]
+
+def printMessage(a,b,c):
+    lock.acquire()
+    print(a,b,c)
+    lock.release()
 
 def isInBound(x):
     return x.find("nwpu.edu.cn")>=0;
@@ -45,7 +50,7 @@ class MyHTMLParser(HTMLParser):
                     if isInBound(urlparse(urlAbs).netloc):
                         if(not urlAbs in visited):
                             visited.add(urlAbs)
-                            procQue.insert(0,urlAbs)
+                            procQue.put(urlAbs)
         elif tag=="script" or tag=="style":
             self.needstep+=1
     def handle_endtag(self, tag):
@@ -57,31 +62,26 @@ class MyHTMLParser(HTMLParser):
 
 class GetContentAsync(threading.Thread):
     currentUrl = ""
-    def __init__(self):
+    threadid = -1
+    def __init__(self, ID):
         threading.Thread.__init__(self)
+        self.threadid=ID
     def run(self):
         while 1:
-            m_lock.acquire()
-            if len(procQue)>=1:
-                self.currentUrl = procQue.pop()
-            else:
-                m_lock.release()
-                break
-            m_lock.release()
+            self.currentUrl = procQue.get()
             for i in range(2):
                 try:
                     y=opener.open(self.currentUrl,timeout=10)
                     break
                 except:
-                    print(self.currentUrl, " Time Out")
                     pass
             else:
-                print(self.currentUrl, " Dead, Passed")
+                printMessage(self.threadid, "\t" + self.currentUrl, " Dead, Passed")
+                procQue.task_done()
                 continue
             if y.getheader('Content-Type').lower() != 'text/html':
+                procQue.task_done()
                 continue
-            
-            m_lock.acquire()
             
             httpContent = y.read()
             for guess in guess_list:
@@ -112,23 +112,25 @@ class GetContentAsync(threading.Thread):
             m = hashlib.sha1()
             m.update(content.encode('utf-8'))
             if(os.path.exists(BASE_PATH + m.hexdigest() + ".html")):
+                procQue.task_done()
                 continue;
             file = open(BASE_PATH + m.hexdigest() + ".txt", 'w', encoding='utf-8')
             file.write(content)
             file_relation.write(m.hexdigest() + "\t" + self.currentUrl+'\n')
-            print(self.currentUrl)
+            printMessage(self.threadid, "\t", self.currentUrl)
             file.close()
-            m_lock.release();
+            procQue.task_done()
+            
 
 file_relation = open(BASE_PATH + "relation.conf", 'w')
 
 tasks = list();
 for i in range(task_num):
-    tasks.append(GetContentAsync())
+    tasks.append(GetContentAsync(i))
 for task in tasks:
+    print("Task ",task.threadid, " Scheduled. ")
     task.start()
-print("Tasks Scheduled. ")
-for task in tasks:
-    task.join()
+procQue.join()
+
     
 file_relation.close()
