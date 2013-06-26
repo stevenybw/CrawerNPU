@@ -94,9 +94,10 @@ class GetContentAsync(threading.Thread):
             #There is a subtle encoding problem. The first char of
             #httpContentStr is /uFFFE which is unrecognizable. I try
             #to delete it while I don't know whether it is right.
-            while not httpContentStr[i].isprintable():
-                i+=1
-            httpContentStr = httpContentStr[i:]
+            if httpContentStr
+                while not httpContentStr[i].isprintable():
+                    i+=1
+                httpContentStr = httpContentStr[i:]
 
             #Parse html for extending nodes and retrieving data
             parser = MyHTMLParser(self.currentUrl)
@@ -111,15 +112,20 @@ class GetContentAsync(threading.Thread):
 
             m = hashlib.sha1()
             m.update(content.encode('utf-8'))
-            if(os.path.exists(BASE_PATH + m.hexdigest() + ".html")):
+            try:
+                if(os.path.exists(BASE_PATH + m.hexdigest() + ".txt")):
+                    procQue.task_done()
+                    continue;
+                file = open(BASE_PATH + m.hexdigest() + ".txt", 'w', encoding='utf-8')
+                file.write(content)
+                file_relation.write(m.hexdigest() + "\t" + self.currentUrl+'\n')
+                printMessage(self.threadid, "\t", self.currentUrl)
+                file.close()
                 procQue.task_done()
-                continue;
-            file = open(BASE_PATH + m.hexdigest() + ".txt", 'w', encoding='utf-8')
-            file.write(content)
-            file_relation.write(m.hexdigest() + "\t" + self.currentUrl+'\n')
-            printMessage(self.threadid, "\t", self.currentUrl)
-            file.close()
-            procQue.task_done()
+            except:
+                print('Error On Writing File')
+                pass
+
             
 
 file_relation = open(BASE_PATH + "relation.conf", 'w')
