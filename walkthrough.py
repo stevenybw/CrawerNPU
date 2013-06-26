@@ -1,7 +1,12 @@
 import os
 import io
-BASE_PATH = "I:\\WebCrawer\\"
+import bs4;
+
+BASE_PATH = "I:\\WebCrawer1\\"
 keyword = "郑江滨"
+
+counter = 0;
+guess_list = ["utf-8","gbk"]
 
 file2url = dict();
 relation_file = open(BASE_PATH + 'relation.conf', 'r')
@@ -15,8 +20,15 @@ for pair in pairs:
 files = os.listdir(BASE_PATH)
 files.remove('relation.conf')
 for file in files:
-    fileobj = open(BASE_PATH + file,'r', encoding='UTF-8')
-    file_content = fileobj.read()
+    if counter % 100 ==0:
+        print(counter)
+    counter = counter+1;
+    for guess in guess_list:
+        try:
+            fileobj = open(BASE_PATH + file,'r', encoding=guess)
+            file_content = fileobj.read()
+        except:
+            pass
     if(file_content.find(keyword) >= 0):
         print(file2url[file[:-5]])
     fileobj.close()
