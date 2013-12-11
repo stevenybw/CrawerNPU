@@ -1,12 +1,21 @@
 CrawerNPU
 =========
+Main Contributor: Yu Bowen
 
-A web crawler for Northwestern Polytechnic University(China).  爬取校园网的信息。
+=========
+A web crawler for Northwestern Polytechnic University(China).
 I found there is a spell mistake on the title of the repository, but I have no idea
 on how to correct it.
 
+2013/12/11 This term we have learned concepts about databases. Now I have developed
+a more stable, more applicable web-crawler. Last version I have used files to store
+the data fetched, which makes a spaghetti code and stopped this project for several
+months. What's more, after closed, the states will be stored into the database which
+means you can continue the work after closed it rather than repeat again. **However,
+this feature is only available in windows for the moment.
+
 Todo:
-1. Multi-tasking support to be concerned.
+[x] 1. Multi-tasking support to be concerned.
 
 Bugs For this crawer:
 2013/6/25 Contents are downloaded directly into local disk without encoding conversion,
