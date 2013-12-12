@@ -9,7 +9,7 @@ class PersistentData:
     # The queue that is to be loaded into
     '''
     def getLastStatus(self, que):
-        self.cur.execute("select url from tocrawl order by id asc")
+        self.cur.execute("select url from tocrawl order by id desc")
         for i in range(self.cur.rowcount):
             que.append(self.cur.fetchone()[0])
     def getVisitedNodes(self, the_set):

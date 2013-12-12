@@ -20,7 +20,6 @@ cj = cookiejar.CookieJar()
 opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cj))
 
 procQue.insert(0,"http://www.nwpu.edu.cn/")
-visited.add("http://www.nwpu.edu.cn/")
 
 guess_list = ["utf-8","gbk"]
 
@@ -49,7 +48,6 @@ class MyHTMLParser(HTMLParser):
                     urlAbs = urljoin(self.currentUrl, url)
                     if isInBound(urlparse(urlAbs).netloc):
                         if(not urlAbs in visited):
-                            visited.add(urlAbs)
                             procQue.append(urlAbs)
         elif tag=="script" or tag=="style":
             self.needstep+=1
@@ -89,6 +87,7 @@ while len(procQue)>=1:
     if(currentUrl in visited):
         print("Existed, step.. ")
         continue
+    visited.add(currentUrl)
     for i in range(2):
         try:
             y=opener.open(currentUrl,timeout=1)
@@ -143,6 +142,7 @@ while len(procQue)>=1:
 
     m = hashlib.sha1(content.encode('utf-8'))
     if count&0xF==0:  db.commit(); print('Database Commited');
+    if count&0x1FF==0: db.saveLastStatus(procQue)
     count+=1
     digest=m.digest()
     if not db.bExistSuchDigest(digest):

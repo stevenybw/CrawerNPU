@@ -16,7 +16,7 @@ this feature is only available in windows for the moment.
 
 Todo:
 [x] 1. Multi-tasking support to be concerned.
-
+[ ] 2. [2013/12/12] It is slow, use Performance Analysis to try to improve its performance.
 Bugs For this crawer:
 2013/6/25 Contents are downloaded directly into local disk without encoding conversion,
 mixing up kinds of encodings.
@@ -26,4 +26,5 @@ mixing up kinds of encodings.
 all what I get from server into local disk, and that makes the search progress very
 slow. So I modified HTMLParser to only save data except scripts or stylesheets.
 
+2013/12/12 BUG, URL's length being 100 is not ever enough. I'll try 500.
 	

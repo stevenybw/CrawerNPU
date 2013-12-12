@@ -7,7 +7,7 @@ content	varchar(500000),
 CONSTRAINT content_pk PRIMARY KEY(sha1));
 
 CREATE TABLE URL(
-url		varchar(100),
+url		varchar(500),
 content		bytea	not null,
 stamp_fetched	timestamp	not null,
 CONSTRAINT url_pk PRIMARY KEY(url),
@@ -17,7 +17,7 @@ CONSTRAINT url_fk FOREIGN KEY(content)
 	
 CREATE TABLE tocrawl(
 id		int,
-url		varchar(100),
+url		varchar(500),
 CONSTRAINT tocrawl_pk PRIMARY KEY(id)
 );
 
