@@ -21,4 +21,9 @@ url		varchar(500),
 CONSTRAINT tocrawl_pk PRIMARY KEY(id)
 );
 
-GRANT ALL ON Content, URL, tocrawl TO python;
+CREATE TABLE dead_link(
+url		varchar(500),
+CONSTRAINT dead_link_pk PRIMARY KEY(url)
+);
+
+GRANT ALL ON Content, URL, tocrawl, dead_link TO python;

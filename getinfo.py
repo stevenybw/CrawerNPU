@@ -13,6 +13,7 @@ from persistent import *
 from on_exit_console import *
 
 procQue = []
+deadLinkQue = []
 visited = set()
 db = PersistentData(database='crawlData', user='python',password='123')
 
@@ -30,6 +31,9 @@ count = 1 #定期更新数据库
 
 def isInBound(x):
     return x.find("nwpu.edu.cn")>=0;
+
+def toStandardDateTime(stringT):
+    return datetime.datetime.strptime(stringT,"%a, %d %b %Y %H:%M:%S %Z")
 
 class MyHTMLParser(HTMLParser):
     output = io.StringIO()
@@ -64,6 +68,7 @@ def on_exit(signal):
     onExitAck.wait()
     print("On Exit Wait OK.")
     db.saveLastStatus(procQue)
+    db.appendDeadLink(deadLinkQue); deadLinkQue.clear();
     db.commit()
     db.close()
     onExit.set()
@@ -90,12 +95,13 @@ while len(procQue)>=1:
     visited.add(currentUrl)
     for i in range(2):
         try:
-            y=opener.open(currentUrl,timeout=1)
+            y=opener.open(currentUrl,timeout=3)
             break
         except:
             print(currentUrl, " Time Out")
             pass
     else:
+        deadLinkQue.append(currentUrl)
         print(currentUrl, " Dead, Passed")
         continue
     if y.getheader('Content-Type').lower() != 'text/html':
@@ -108,6 +114,7 @@ while len(procQue)>=1:
             print("Error reading, try again.")
             pass
     else:
+        deadLinkQue.append(currentUrl)
         print(currentUrl, " Dead, Passed")
         continue
     
@@ -118,6 +125,7 @@ while len(procQue)>=1:
         except:
             pass
     else:
+        deadLinkQue.append(currentUrl)
         print('Unknown Charset, Passed')
         continue
     i=0
@@ -142,9 +150,10 @@ while len(procQue)>=1:
 
     m = hashlib.sha1(content.encode('utf-8'))
     if count&0xF==0:  db.commit(); print('Database Commited');
-    if count&0x1FF==0: db.saveLastStatus(procQue)
+    if count&0x1FF==0: db.saveLastStatus(procQue); db.appendDeadLink(deadLinkQue); deadLinkQue.clear(); print('Status Updated to DB')
     count+=1
     digest=m.digest()
     if not db.bExistSuchDigest(digest):
         db.addContent(digest,content)
-    db.addUrl(currentUrl,digest)
+    fetch_date = toStandardDateTime(y.getheader('Date'))
+    db.addUrl(currentUrl,digest,fetch_date)

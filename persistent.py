@@ -23,6 +23,10 @@ class PersistentData:
             self.cur.execute("insert into tocrawl(id,url) values(%s,%s)",(id,url))
             id+=1
         self.conn.commit()
+    def appendDeadLink(self, dead_link_que):
+        for url in dead_link_que:
+            self.cur.execute("insert into dead_link(url) values(%s)",(url,))
+        self.conn.commit()
     #is the digest existed on the content
     def bExistSuchDigest(self,digest):
         self.cur.execute("select sha1 from content where sha1=%s",(digest,))
@@ -31,8 +35,8 @@ class PersistentData:
         return flag
     def addContent(self, digest, content):
         self.cur.execute("insert into content(sha1,content) values(%s,%s)",(digest, content))
-    def addUrl(self, url, content_digest):
-        self.cur.execute("insert into url(url,content,stamp_fetched) values(%s,%s,%s)",(url, content_digest, datetime.datetime.now()))
+    def addUrl(self, url, content_digest, fetch_date_time):
+        self.cur.execute("insert into url(url,content,stamp_fetched) values(%s,%s,%s)",(url, content_digest, fetch_date_time))
     def commit(self):
         self.conn.commit()
     def close(self):
